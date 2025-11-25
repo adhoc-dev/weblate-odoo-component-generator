@@ -55,7 +55,7 @@ def main():
     vcs information. Subsequent components are linked to the vcs of the
     first component.
     """
-    all_projects = Project.objects.all()
+    all_projects = Project.objects.all().exclude(name='0-adhoc-project-template')
 
     data_dir = settings.DATA_DIR
     svn_dir = os.path.join(data_dir, 'vcs')
