@@ -68,11 +68,13 @@ def create_project(
         )
 
         try:
-            get_new_component(
+            new_component, tmpl_component_pk = get_new_component(
                 new_project, repository, branch, addon_name,
                 tmpl_component_slug,
                 addons_subdirectory=addons_subdirectory,
             )
+            new_component.do_update()
+            copy_installed_addons(tmpl_component_pk, new_component)
         except Exception as e:
             logger.exception(e)
             new_project.delete()
@@ -124,8 +126,7 @@ def get_new_component(
     new_component.file_format = 'po'
     new_component.locked = False
     new_component.save(force_insert=True)
-    copy_installed_addons(tmpl_component_pk, new_component)
-    return new_component
+    return new_component, tmpl_component_pk
 
 
 @click.command()
