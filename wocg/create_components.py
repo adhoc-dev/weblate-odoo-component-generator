@@ -12,6 +12,7 @@ django.setup()  # noqa: E402
 
 from django.conf import settings
 from weblate.trans.models import Project
+from weblate.trans.tasks import perform_load
 
 from .tools.component import copy_installed_addons
 from .tools.manifest import get_translatable_addons
@@ -116,3 +117,6 @@ def main():
             new_component.save()
 
             copy_installed_addons(main_component_pk, new_component)
+            
+            # Load translations for the new component
+            perform_load(new_component.pk, force=True)
