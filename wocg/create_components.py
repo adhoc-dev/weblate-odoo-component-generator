@@ -11,7 +11,8 @@ import django
 django.setup()  # noqa: E402
 
 from django.conf import settings
-from weblate.trans.models import Project
+from weblate.lang.models import Language
+from weblate.trans.models import Alert, Project
 from weblate.trans.tasks import perform_load
 
 from .tools.component import copy_installed_addons
@@ -120,3 +121,23 @@ def main():
             
             # Load translations for the new component
             perform_load(new_component.pk, force=True)
+
+    add_spanish_to_components_without_po()
+
+
+def add_spanish_to_components_without_po():
+    """Add the Spanish translation to the components whose file mask matches
+    no .po file: the same as clicking "+" on Spanish in the UI."""
+    spanish = Language.objects.get(code='es')
+    alerts = Alert.objects.filter(name='NoMaskMatches').select_related('component')
+    for alert in alerts:
+        component = alert.component
+        logger.info('Adding Spanish to component %s', component)
+        try:
+            if not component.add_new_language(spanish, None):
+                logger.info(
+                    'Could not add Spanish to component %s: %s',
+                    component, component.new_lang_error_message,
+                )
+        except Exception as e:
+            logger.exception(e)
